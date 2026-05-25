@@ -41,13 +41,14 @@ export default function OverallSummary() {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      {cards.map((card) => (
+      {cards.map((card, i) => (
         <div
           key={card.label}
-          className="p-4 rounded-xl transition-shadow"
+          className="p-4 rounded-xl card-hover animate-slideUp"
           style={{
             backgroundColor: 'var(--color-surface)',
             boxShadow: 'var(--color-card-shadow)',
+            animationDelay: `${i * 0.06}s`,
           }}
         >
           <div className="flex items-start justify-between mb-2">

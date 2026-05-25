@@ -32,8 +32,8 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-6">
+    <div className="max-w-2xl mx-auto page-enter">
+      <div className="mb-6 animate-fadeIn">
         <h2 className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
           Settings
         </h2>
@@ -42,9 +42,8 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      {/* Account */}
       <div
-        className="rounded-xl p-6 mb-4"
+        className="rounded-xl p-6 mb-4 animate-slideUp"
         style={{ backgroundColor: 'var(--color-surface)' }}
       >
         <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
@@ -78,10 +77,9 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Preferences */}
       <div
-        className="rounded-xl p-6 mb-4"
-        style={{ backgroundColor: 'var(--color-surface)' }}
+        className="rounded-xl p-6 mb-4 animate-slideUp"
+        style={{ backgroundColor: 'var(--color-surface)', animationDelay: '0.05s' }}
       >
         <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -114,14 +112,15 @@ export default function SettingsPage() {
           <div>
             <p className="text-sm font-medium mb-3" style={{ color: 'var(--color-text)' }}>Color Theme</p>
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-              {THEMES.map((t) => (
+              {THEMES.map((t, i) => (
                 <button
                   key={t.name}
                   onClick={() => setTheme(t.name)}
-                  className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl cursor-pointer transition-all"
+                  className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl cursor-pointer transition-all hover:scale-105 animate-fadeIn"
                   style={{
                     backgroundColor: theme === t.name ? 'var(--color-primary-light)' : 'var(--color-bg)',
                     outline: theme === t.name ? `2px solid var(--color-primary)` : 'none',
+                    animationDelay: `${i * 0.06}s`,
                   }}
                 >
                   <div className="flex gap-0.5 rounded-lg overflow-hidden w-full h-8">
@@ -144,10 +143,9 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Data */}
       <div
-        className="rounded-xl p-6 mb-4"
-        style={{ backgroundColor: 'var(--color-surface)' }}
+        className="rounded-xl p-6 mb-4 animate-slideUp"
+        style={{ backgroundColor: 'var(--color-surface)', animationDelay: '0.1s' }}
       >
         <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -185,10 +183,9 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Subjects */}
       <div
-        className="rounded-xl p-6 mb-4"
-        style={{ backgroundColor: 'var(--color-surface)' }}
+        className="rounded-xl p-6 mb-4 animate-slideUp"
+        style={{ backgroundColor: 'var(--color-surface)', animationDelay: '0.15s' }}
       >
         <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

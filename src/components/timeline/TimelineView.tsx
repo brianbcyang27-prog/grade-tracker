@@ -23,8 +23,8 @@ export default function TimelineView() {
   const isPastDue = (date: string) => new Date(date) < today;
 
   return (
-    <div>
-      <div className="mb-6">
+    <div className="page-enter">
+      <div className="mb-6 animate-fadeIn">
         <h2 className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
           Assignment Timeline
         </h2>
@@ -33,9 +33,8 @@ export default function TimelineView() {
         </p>
       </div>
 
-      {/* Filters */}
       <div
-        className="rounded-xl p-4 mb-6 flex flex-wrap items-center gap-3"
+        className="rounded-xl p-4 mb-6 flex flex-wrap items-center gap-3 animate-slideUp"
         style={{ backgroundColor: 'var(--color-surface)' }}
       >
         <div className="flex items-center gap-2">
@@ -85,11 +84,11 @@ export default function TimelineView() {
       {/* Timeline */}
       {filteredAssignments.length === 0 ? (
         <div
-          className="rounded-xl p-12 text-center"
+          className="rounded-xl p-12 text-center animate-scaleIn"
           style={{ backgroundColor: 'var(--color-surface)' }}
         >
           <svg
-            className="w-16 h-16 mx-auto mb-4"
+            className="w-16 h-16 mx-auto mb-4 animate-fadeIn"
             style={{ color: 'var(--color-text-secondary)' }}
             fill="none"
             viewBox="0 0 24 24"
@@ -107,16 +106,18 @@ export default function TimelineView() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filteredAssignments.map((a) => {
+          {filteredAssignments.map((a, i) => {
+            const animDelay = `${Math.min(i * 0.03, 0.4)}s`;
             const pastDue = isPastDue(a.date);
             return (
               <div
                 key={a.id}
-                className="rounded-xl p-4 transition-all duration-200 flex items-start gap-4 cursor-pointer"
+                className="rounded-xl p-4 transition-all duration-200 flex items-start gap-4 cursor-pointer card-hover"
                 style={{
                   backgroundColor: 'var(--color-surface)',
                   boxShadow: 'var(--color-card-shadow)',
                   borderLeft: `4px solid ${getGradeColor(a.score >= 6 ? 'A' : a.score >= 4 ? 'C+' : 'D')}`,
+                  animation: `slideUp 0.3s ease ${animDelay} both`,
                 }}
                 onClick={() =>
                   navigate(`/subject/${encodeURIComponent(a.subject)}/${a.semester}`)

@@ -11,23 +11,31 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div
-          className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-          style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }}
-        />
+      <div className="space-y-4 animate-fadeIn">
+        <div className="flex items-start justify-between mb-6">
+          <div className="space-y-2">
+            <div className="skeleton h-7 w-48" />
+            <div className="skeleton h-4 w-32" />
+          </div>
+        </div>
+        <div className="skeleton h-32 w-full" />
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="skeleton h-48 rounded-xl" />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="page-enter">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
+          <h2 className="text-xl font-bold animate-fadeIn" style={{ color: 'var(--color-text)' }}>
             {selectedSemester === 'ALL' ? 'Overall Dashboard' : `${selectedSemester} Dashboard`}
           </h2>
-          <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+          <p className="text-sm mt-1 animate-fadeIn" style={{ color: 'var(--color-text-secondary)' }}>
             {selectedSemester === 'ALL'
               ? 'Summary across all semesters'
               : `Grade summary for ${selectedSemester}`}
@@ -36,15 +44,19 @@ export default function Dashboard() {
         <DataTools />
       </div>
 
-      <Suggestions />
-      <OverallSummary />
+      <div className="animate-slideUp">
+        <Suggestions />
+      </div>
+      <div className="animate-slideUp" style={{ animationDelay: '0.08s' }}>
+        <OverallSummary />
+      </div>
 
       {subjects.length === 0 ? (
         <div
-          className="rounded-xl p-12 text-center"
+          className="rounded-xl p-12 text-center animate-scaleIn"
           style={{ backgroundColor: 'var(--color-surface)' }}
         >
-          <div className="mb-4">
+          <div className="mb-4 animate-fadeIn">
             <svg
               className="w-16 h-16 mx-auto"
               style={{ color: 'var(--color-text-secondary)' }}
@@ -60,14 +72,14 @@ export default function Dashboard() {
               />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
+          <h3 className="text-lg font-semibold mb-2 animate-fadeIn" style={{ color: 'var(--color-text)' }}>
             No grades yet
           </h3>
-          <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
+          <p className="text-sm mb-4 animate-fadeIn" style={{ color: 'var(--color-text-secondary)' }}>
             Start by adding assignments using the Mini Input Panel on the right.
           </p>
           <div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all hover:scale-105 animate-fadeIn"
             style={{
               color: 'var(--color-primary)',
               backgroundColor: 'var(--color-primary-light)',
@@ -80,19 +92,24 @@ export default function Dashboard() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {subjects.map((s) => (
-            <SubjectCard key={`${s.subject}-${s.semester}`} data={s} allSubjects={subjects} />
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-6">
+          {subjects.map((s, i) => (
+            <div
+              key={`${s.subject}-${s.semester}`}
+              className="animate-slideUp card-hover"
+              style={{ animationDelay: `${Math.min(i * 0.05, 0.4)}s` }}
+            >
+              <SubjectCard data={s} allSubjects={subjects} />
+            </div>
           ))}
         </div>
       )}
 
-      {/* Feedback Button */}
       <a
         href="https://docs.google.com/forms/d/e/1FAIpQLSeWhKSqD6waLp0Gtq2ObH6ckTe3E4LC6hwB59yykIW3-4FE7A/viewform?usp=publish-editor"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 flex items-center gap-2 px-5 py-3 rounded-full text-sm font-semibold shadow-lg transition-all hover:scale-105 hover:shadow-xl z-50"
+        className="fixed bottom-6 right-6 flex items-center gap-2 px-5 py-3 rounded-full text-sm font-semibold shadow-lg transition-all hover:scale-110 hover:shadow-xl z-50 animate-slideUp"
         style={{
           color: '#fff',
           background: 'linear-gradient(135deg, var(--color-primary), var(--color-accent))',
