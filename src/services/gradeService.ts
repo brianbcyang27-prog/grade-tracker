@@ -5,7 +5,6 @@ import {
   updateDoc,
   deleteDoc,
   query,
-  where,
   onSnapshot,
   orderBy,
   Timestamp,
@@ -23,10 +22,12 @@ export function listenToGrades(
   onData: (assignments: Assignment[]) => void,
   onError: (err: Error) => void,
 ): Unsubscribe {
+  console.log('[Firestore] Starting listener for user:', userId);
   const q = query(gradesCollection(userId), orderBy('date', 'desc'));
   return onSnapshot(
     q,
     (snapshot) => {
+      console.log('[Firestore] Received', snapshot.docs.length, 'documents');
       const list: Assignment[] = snapshot.docs.map((d) => {
         const data = d.data();
         return {
@@ -45,7 +46,10 @@ export function listenToGrades(
       });
       onData(list);
     },
-    (err) => onError(err),
+    (err) => {
+      console.error('[Firestore] Listener error:', err);
+      onError(err);
+    },
   );
 }
 
@@ -63,13 +67,24 @@ export async function addGrade(
     status?: string;
   },
 ): Promise<string> {
-  const docRef = await addDoc(gradesCollection(userId), {
-    ...grade,
-    maxScore: grade.maxScore ?? 8,
-    status: grade.status ?? 'data in',
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-  });
+  console.log('[Firestore] Adding grade for user:', userId, grade);
+
+  // Remove undefined fields — Firestore rejects undefined values
+  const clean: Record<string, any> = {};
+  for (const [key, val] of Object.entries(grade)) {
+    if (val !== undefined) clean[key] = val;
+  }
+  clean.maxScore = grade.maxScore ?? 8;
+  clean.status = grade.status ?? 'data in';
+  clean.createdAt = Timestamp.now();
+  clean.updatedAt = Timestamp.now();
+
+  console.log('[Firestore] Writing data:', clean);
+  const ref = gradesCollection(userId);
+  console.log('[Firestore] Collection path: users', userId, 'grades');
+
+  const docRef = await addDoc(ref, clean);
+  console.log('[Firestore] Grade added with ID:', docRef.id);
   return docRef.id;
 }
 
@@ -86,11 +101,13 @@ export async function updateGrade(
     criterion: Criterion;
   }>,
 ): Promise<void> {
+  console.log('[Firestore] Updating grade:', gradeId, updates);
   const ref = doc(db, 'users', userId, 'grades', gradeId);
   await updateDoc(ref, { ...updates, updatedAt: Timestamp.now() });
 }
 
 export async function deleteGrade(userId: string, gradeId: string): Promise<void> {
+  console.log('[Firestore] Deleting grade:', gradeId);
   const ref = doc(db, 'users', userId, 'grades', gradeId);
   await deleteDoc(ref);
 }

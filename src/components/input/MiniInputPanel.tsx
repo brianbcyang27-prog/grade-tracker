@@ -6,6 +6,8 @@ import type { Semester, SubjectName, Criterion } from '../../types';
 export default function MiniInputPanel() {
   const addAssignment = useGradeStore((s) => s.addAssignment);
   const userId = useGradeStore((s) => s.userId);
+  const storeError = useGradeStore((s) => s.error);
+  const setError = useGradeStore((s) => s.setError);
   const [semester, setSemester] = useState<Semester>(SEMESTERS[0]);
   const [subject, setSubject] = useState<SubjectName>(SUBJECTS[0]);
   const [criterion, setCriterion] = useState<Criterion>('A');
@@ -14,19 +16,42 @@ export default function MiniInputPanel() {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
   const [success, setSuccess] = useState(false);
+  const [localError, setLocalError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userId) return;
-    const scoreNum = parseFloat(score);
-    if (!title.trim() || isNaN(scoreNum) || scoreNum < 0 || scoreNum > 8) return;
+    setLocalError('');
 
-    await addAssignment(userId, semester, subject, criterion, title.trim(), scoreNum, date, notes || undefined);
-    setTitle('');
-    setScore('');
-    setNotes('');
-    setSuccess(true);
-    setTimeout(() => setSuccess(false), 2000);
+    console.log('[InputPanel] Submit clicked. userId:', userId);
+    console.log('[InputPanel] Form values:', { semester, subject, criterion, title, score, date });
+
+    if (!userId) {
+      console.error('[InputPanel] No userId - user might not be logged in');
+      setLocalError('Not logged in. Please sign in first.');
+      return;
+    }
+
+    const scoreNum = parseFloat(score);
+    if (!title.trim() || isNaN(scoreNum) || scoreNum < 0 || scoreNum > 8) {
+      setLocalError('Invalid input. Score must be 0-8 and title is required.');
+      return;
+    }
+
+    console.log('[InputPanel] Calling addAssignment...');
+    try {
+      await addAssignment(userId, semester, subject, criterion, title.trim(), scoreNum, date, notes || undefined);
+      console.log('[InputPanel] addAssignment completed');
+
+      setTitle('');
+      setScore('');
+      setNotes('');
+      setSuccess(true);
+      setError(null);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch (err: any) {
+      console.error('[InputPanel] Submit failed:', err);
+      setLocalError(`Error: ${err.message}`);
+    }
   };
 
   return (
@@ -45,6 +70,21 @@ export default function MiniInputPanel() {
           Mini Input
         </span>
       </div>
+
+      {(localError || storeError) && (
+        <div
+          className="p-3 rounded-lg text-xs mb-3"
+          style={{ color: '#dc2626', backgroundColor: '#fef2f2' }}
+        >
+          {localError || storeError}
+          <button
+            onClick={() => { setLocalError(''); setError(null); }}
+            className="ml-2 font-bold cursor-pointer"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>

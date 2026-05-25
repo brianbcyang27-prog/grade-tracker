@@ -50,14 +50,24 @@ export const useGradeStore = create<GradeStore>()((set, get) => ({
   loading: true,
   error: null,
 
-  setUserId: (uid) => set({ userId: uid }),
-  setAssignments: (list) => set({ assignments: list, loading: false }),
+  setUserId: (uid) => {
+    console.log('[Store] User ID set:', uid);
+    set({ userId: uid });
+  },
+  setAssignments: (list) => {
+    console.log('[Store] Assignments updated:', list.length, 'items');
+    set({ assignments: list, loading: false });
+  },
   setLoading: (v) => set({ loading: v }),
-  setError: (e) => set({ error: e }),
+  setError: (e) => {
+    if (e) console.error('[Store] Error:', e);
+    set({ error: e });
+  },
 
   addAssignment: async (userId, semester, subject, criterion, title, score, date, notes) => {
+    console.log('[Store] addAssignment called', { userId, semester, subject, criterion, title, score });
     try {
-      await addGrade(userId, {
+      const id = await addGrade(userId, {
         semester,
         subject,
         criterion,
@@ -66,23 +76,29 @@ export const useGradeStore = create<GradeStore>()((set, get) => ({
         date: date ?? new Date().toISOString().split('T')[0],
         notes,
       });
+      console.log('[Store] addAssignment succeeded, doc id:', id);
     } catch (err: any) {
-      set({ error: err.message });
+      console.error('[Store] addAssignment failed:', err);
+      set({ error: `Failed to add grade: ${err.message}` });
     }
   },
 
   removeAssignment: async (userId, id) => {
+    console.log('[Store] removeAssignment:', id);
     try {
       await deleteGrade(userId, id);
     } catch (err: any) {
+      console.error('[Store] removeAssignment failed:', err);
       set({ error: err.message });
     }
   },
 
   updateAssignment: async (userId, id, updates) => {
+    console.log('[Store] updateAssignment:', id, updates);
     try {
       await updateGrade(userId, id, updates);
     } catch (err: any) {
+      console.error('[Store] updateAssignment failed:', err);
       set({ error: err.message });
     }
   },
