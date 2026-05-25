@@ -41,7 +41,7 @@ interface GradeStore {
   clearAllData: () => void;
 }
 
-export const useGradeStore = create<GradeStore>()((set, get) => ({
+export const useGradeStore = create<GradeStore>()((set) => ({
   assignments: [],
   darkMode: window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false,
   selectedSemester: 'ALL' as Semester | 'ALL',

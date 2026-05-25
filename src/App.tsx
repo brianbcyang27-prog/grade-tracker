@@ -9,6 +9,7 @@ import SubjectDetail from './components/subject/SubjectDetail';
 import TimelineView from './components/timeline/TimelineView';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import SettingsPage from './pages/SettingsPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
 function AppContent() {
@@ -55,6 +56,7 @@ function AppContent() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/subject/:subject/:semester" element={<SubjectDetail />} />
         <Route path="/timeline" element={<TimelineView />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
     </Routes>
   );

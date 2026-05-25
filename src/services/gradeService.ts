@@ -39,7 +39,7 @@ export function listenToGrades(
           score: data.score as number,
           maxScore: (data.maxScore as number) ?? 8,
           date: data.date as string,
-          status: (data.status as string) ?? 'data in',
+          status: (data.status as Assignment['status']) ?? 'data in',
           notes: data.notes as string | undefined,
           createdAt: data.createdAt?.toDate?.()?.toISOString(),
         };

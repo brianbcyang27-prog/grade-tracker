@@ -167,7 +167,6 @@ export default function SubjectDetail() {
           {tableRows.map((row) => {
             const isPlaceholder = row.id.startsWith('placeholder-');
             const statusColor = isPlaceholder ? 'var(--color-warning)' : 'var(--color-success)';
-            const statusText = isPlaceholder ? 'no data' : 'data in';
 
             return (
               <div
