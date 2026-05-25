@@ -1,4 +1,4 @@
-import type { Assignment, Criterion, GradeBand, SubjectData, SubjectName, Semester } from '../types';
+import type { Assignment, Criterion, GradeBand, SubjectData, Semester } from '../types';
 import { CRITERIA } from '../types';
 
 export const GRADE_BANDS: GradeBand[] = [
@@ -45,7 +45,7 @@ export function getAverageForCriterion(
 
 export function computeSubjectData(
   assignments: Assignment[],
-  subject: SubjectName,
+  subject: string,
   semester: Semester,
 ): SubjectData {
   const subjectAssignments = assignments.filter(
@@ -88,7 +88,7 @@ export function computeAllSubjects(
   filtered.forEach((a) => subjectSemesters.add(`${a.subject}::${a.semester}`));
 
   return Array.from(subjectSemesters).map((key) => {
-    const [subject, sem] = key.split('::') as [SubjectName, Semester];
+    const [subject, sem] = key.split('::') as [string, Semester];
     return computeSubjectData(assignments, subject, sem);
   });
 }

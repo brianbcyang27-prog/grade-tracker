@@ -21,7 +21,7 @@ export type SubjectName =
 
 export interface Assignment {
   id: string;
-  subject: SubjectName;
+  subject: string;
   semester: Semester;
   criterion: Criterion;
   title: string;
@@ -40,7 +40,7 @@ export interface CriterionData {
 }
 
 export interface SubjectData {
-  subject: SubjectName;
+  subject: string;
   semester: Semester;
   criteria: Record<Criterion, Assignment[]>;
   totalScore: number;

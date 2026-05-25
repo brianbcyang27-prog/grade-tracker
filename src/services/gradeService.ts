@@ -11,7 +11,7 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import type { Assignment, Semester, SubjectName, Criterion } from '../types';
+import type { Assignment, Semester, Criterion } from '../types';
 
 function gradesCollection(userId: string) {
   return collection(db, 'users', userId, 'grades');
@@ -32,7 +32,7 @@ export function listenToGrades(
         const data = d.data();
         return {
           id: d.id,
-          subject: data.subject as SubjectName,
+          subject: data.subject as string,
           semester: data.semester as Semester,
           criterion: data.criterion as Criterion,
           title: data.title as string,
@@ -57,7 +57,7 @@ export async function addGrade(
   userId: string,
   grade: {
     semester: Semester;
-    subject: SubjectName;
+    subject: string;
     criterion: Criterion;
     title: string;
     score: number;

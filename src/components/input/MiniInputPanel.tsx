@@ -1,15 +1,19 @@
 import { useState } from 'react';
 import { useGradeStore } from '../../store/gradeStore';
-import { SEMESTERS, SUBJECTS, CRITERIA } from '../../types';
-import type { Semester, SubjectName, Criterion } from '../../types';
+import { SEMESTERS, CRITERIA } from '../../types';
+import type { Semester, Criterion } from '../../types';
+import { getAllSubjects } from '../../utils/subjects';
 
 export default function MiniInputPanel() {
   const addAssignment = useGradeStore((s) => s.addAssignment);
   const userId = useGradeStore((s) => s.userId);
   const storeError = useGradeStore((s) => s.error);
   const setError = useGradeStore((s) => s.setError);
+  const customSubjects = useGradeStore((s) => s.customSubjects);
+  const addCustomSubject = useGradeStore((s) => s.addCustomSubject);
+  const allSubjects = getAllSubjects(customSubjects);
   const [semester, setSemester] = useState<Semester>(SEMESTERS[0]);
-  const [subject, setSubject] = useState<SubjectName>(SUBJECTS[0]);
+  const [subject, setSubject] = useState<string>(allSubjects[0]);
   const [criterion, setCriterion] = useState<Criterion>('A');
   const [title, setTitle] = useState('');
   const [score, setScore] = useState('');
@@ -17,6 +21,8 @@ export default function MiniInputPanel() {
   const [notes, setNotes] = useState('');
   const [success, setSuccess] = useState(false);
   const [localError, setLocalError] = useState('');
+  const [showNewSubject, setShowNewSubject] = useState(false);
+  const [newSubjectName, setNewSubjectName] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,20 +117,76 @@ export default function MiniInputPanel() {
           <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
             Subject
           </label>
-          <select
-            value={subject}
-            onChange={(e) => setSubject(e.target.value as SubjectName)}
-            className="w-full px-3 py-2 rounded-lg text-sm border transition-colors cursor-pointer"
-            style={{
-              backgroundColor: 'var(--color-surface)',
-              color: 'var(--color-text)',
-              borderColor: 'var(--color-border)',
-            }}
-          >
-            {SUBJECTS.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
+          {showNewSubject ? (
+            <div className="flex gap-1">
+              <input
+                type="text"
+                value={newSubjectName}
+                onChange={(e) => setNewSubjectName(e.target.value)}
+                placeholder="New subject name"
+                className="flex-1 px-3 py-2 rounded-lg text-sm border transition-colors"
+                style={{
+                  backgroundColor: 'var(--color-surface)',
+                  color: 'var(--color-text)',
+                  borderColor: 'var(--color-border)',
+                }}
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const name = newSubjectName.trim();
+                  if (name) {
+                    addCustomSubject(name);
+                    setSubject(name);
+                    setNewSubjectName('');
+                    setShowNewSubject(false);
+                  }
+                }}
+                className="px-3 py-2 rounded-lg text-sm font-medium cursor-pointer"
+                style={{ color: '#fff', backgroundColor: 'var(--color-success)' }}
+              >
+                Add
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowNewSubject(false); setNewSubjectName(''); }}
+                className="px-3 py-2 rounded-lg text-sm cursor-pointer"
+                style={{ color: 'var(--color-text-secondary)', backgroundColor: 'var(--color-surface)' }}
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-1">
+              <select
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className="flex-1 px-3 py-2 rounded-lg text-sm border transition-colors cursor-pointer"
+                style={{
+                  backgroundColor: 'var(--color-surface)',
+                  color: 'var(--color-text)',
+                  borderColor: 'var(--color-border)',
+                }}
+              >
+                {allSubjects.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => setShowNewSubject(true)}
+                className="px-2.5 py-2 rounded-lg text-sm font-medium cursor-pointer whitespace-nowrap"
+                style={{
+                  color: 'var(--color-primary)',
+                  backgroundColor: 'var(--color-primary-light)',
+                }}
+                title="Add new subject"
+              >
+                + New
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="flex gap-2">

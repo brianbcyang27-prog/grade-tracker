@@ -1,12 +1,16 @@
 import { useGradeStore } from '../store/gradeStore';
 import { useAuth } from '../context/AuthContext';
 import { exportToCSV } from '../utils/export';
+import { getAllSubjects } from '../utils/subjects';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 export default function SettingsPage() {
-  const { darkMode, toggleDarkMode, assignments, clearAllData } = useGradeStore();
+  const { darkMode, toggleDarkMode, assignments, clearAllData, customSubjects, addCustomSubject, removeCustomSubject } = useGradeStore();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [newSubject, setNewSubject] = useState('');
+  const allSubjects = getAllSubjects(customSubjects);
 
   const handleExport = () => {
     exportToCSV(assignments);
@@ -139,39 +143,71 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Feedback */}
+      {/* Subjects */}
       <div
         className="rounded-xl p-6 mb-4"
         style={{ backgroundColor: 'var(--color-surface)' }}
       >
         <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342" />
           </svg>
-          Feedback
+          Subjects
         </h3>
-        <p className="text-sm mb-3" style={{ color: 'var(--color-text-secondary)' }}>
-          Help us improve the MYP Grade Tracker. Your feedback is greatly appreciated.
-        </p>
-        <div
-          className="p-4 rounded-lg text-sm text-center"
-          style={{
-            backgroundColor: 'var(--color-primary-light)',
-            color: 'var(--color-primary)',
-          }}
-        >
-          <a
-            href="https://docs.google.com/forms/d/e/1FAIpQLSeWhKSqD6waLp0Gtq2ObH6ckTe3E4LC6hwB59yykIW3-4FE7A/viewform?usp=publish-editor"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 font-semibold transition-opacity hover:opacity-80"
-            style={{ color: 'var(--color-primary)' }}
+
+        {/* Add custom subject */}
+        <div className="flex gap-2 mb-3">
+          <input
+            type="text"
+            value={newSubject}
+            onChange={(e) => setNewSubject(e.target.value)}
+            placeholder="New subject name"
+            className="flex-1 px-3 py-2 rounded-lg text-sm border"
+            style={{
+              backgroundColor: 'var(--color-bg)',
+              color: 'var(--color-text)',
+              borderColor: 'var(--color-border)',
+            }}
+          />
+          <button
+            onClick={() => {
+              if (newSubject.trim()) {
+                addCustomSubject(newSubject.trim());
+                setNewSubject('');
+              }
+            }}
+            className="px-4 py-2 rounded-lg text-sm font-medium cursor-pointer"
+            style={{ color: '#fff', backgroundColor: 'var(--color-primary)' }}
           >
-            Open Feedback Form
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-            </svg>
-          </a>
+            Add
+          </button>
+        </div>
+
+        {/* Subject list */}
+        <div className="space-y-1 max-h-60 overflow-y-auto">
+          {allSubjects.map((s) => {
+            const isCustom = customSubjects.includes(s);
+            return (
+              <div
+                key={s}
+                className="flex items-center justify-between py-2 px-3 rounded-lg text-sm"
+                style={{ backgroundColor: 'var(--color-bg)' }}
+              >
+                <span style={{ color: 'var(--color-text)' }}>{s}</span>
+                {isCustom ? (
+                  <button
+                    onClick={() => removeCustomSubject(s)}
+                    className="px-2 py-0.5 rounded text-xs font-medium cursor-pointer"
+                    style={{ color: 'var(--color-danger)', backgroundColor: '#fef2f2' }}
+                  >
+                    Remove
+                  </button>
+                ) : (
+                  <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>Default</span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

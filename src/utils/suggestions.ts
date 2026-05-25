@@ -1,4 +1,4 @@
-import type { Assignment, SubjectName, Semester, Criterion } from '../types';
+import type { Assignment, Semester, Criterion } from '../types';
 import { CRITERIA } from '../types';
 import { computeSubjectData, GRADE_BANDS, getGradeBand } from './grading';
 
@@ -24,7 +24,7 @@ export function generateSuggestions(assignments: Assignment[]): Suggestion[] {
   assignments.forEach((a) => subjectSemesters.add(`${a.subject}::${a.semester}`));
 
   const allSubjects = Array.from(subjectSemesters).map((key) => {
-    const [subject, semester] = key.split('::') as [SubjectName, Semester];
+    const [subject, semester] = key.split('::') as [string, Semester];
     return computeSubjectData(assignments, subject, semester);
   });
 

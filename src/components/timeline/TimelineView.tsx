@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGradeStore } from '../../store/gradeStore';
-import { SUBJECTS, CRITERIA, type Criterion, type Assignment } from '../../types';
+import { CRITERIA, type Criterion, type Assignment } from '../../types';
+import { getAllSubjects } from '../../utils/subjects';
 import { getGradeColor } from '../../utils/grading';
 
 type FilterSubject = 'ALL' | Assignment['subject'];
 
 export default function TimelineView() {
-  const { assignments } = useGradeStore();
+  const { assignments, customSubjects } = useGradeStore();
+  const allSubjects = getAllSubjects(customSubjects);
   const navigate = useNavigate();
   const [filterSubject, setFilterSubject] = useState<FilterSubject>('ALL');
   const [filterCriterion, setFilterCriterion] = useState<Criterion | 'ALL'>('ALL');
@@ -54,7 +56,7 @@ export default function TimelineView() {
           }}
         >
           <option value="ALL">All Subjects</option>
-          {SUBJECTS.map((s) => (
+          {allSubjects.map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
