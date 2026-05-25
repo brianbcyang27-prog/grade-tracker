@@ -2,22 +2,25 @@ import { create } from 'zustand';
 import type { Assignment, Semester, Criterion } from '../types';
 import { addGrade, updateGrade, deleteGrade } from '../services/gradeService';
 
-function loadCustomSubjects(): string[] {
+export type ThemeName = 'indigo' | 'emerald' | 'rose' | 'amber' | 'ocean' | 'midnight';
+
+function loadLocal<T>(key: string, fallback: T): T {
   try {
-    const raw = localStorage.getItem('grade-tracker-custom-subjects');
-    return raw ? JSON.parse(raw) : [];
+    const raw = localStorage.getItem(`grade-tracker-${key}`);
+    return raw ? JSON.parse(raw) : fallback;
   } catch {
-    return [];
+    return fallback;
   }
 }
 
-function saveCustomSubjects(subjects: string[]) {
-  localStorage.setItem('grade-tracker-custom-subjects', JSON.stringify(subjects));
+function saveLocal(key: string, value: any) {
+  localStorage.setItem(`grade-tracker-${key}`, JSON.stringify(value));
 }
 
 interface GradeStore {
   assignments: Assignment[];
   darkMode: boolean;
+  theme: ThemeName;
   selectedSemester: Semester | 'ALL';
   inputPanelOpen: boolean;
   userId: string | null;
@@ -51,6 +54,7 @@ interface GradeStore {
 
   setSelectedSemester: (semester: Semester | 'ALL') => void;
   toggleDarkMode: () => void;
+  setTheme: (theme: ThemeName) => void;
   setInputPanelOpen: (open: boolean) => void;
   clearAllData: () => void;
   addCustomSubject: (name: string) => void;
@@ -61,12 +65,13 @@ function createStore() {
   return create<GradeStore>()((set) => ({
     assignments: [],
     darkMode: window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false,
+    theme: loadLocal<ThemeName>('theme', 'indigo'),
     selectedSemester: 'ALL' as Semester | 'ALL',
     inputPanelOpen: true,
     userId: null,
     loading: true,
     error: null,
-    customSubjects: loadCustomSubjects(),
+    customSubjects: loadLocal<string[]>('custom-subjects', []),
 
     setUserId: (uid) => {
       set({ userId: uid });
@@ -117,6 +122,10 @@ function createStore() {
 
     setSelectedSemester: (semester) => set({ selectedSemester: semester }),
     toggleDarkMode: () => set((s) => ({ darkMode: !s.darkMode })),
+    setTheme: (theme) => {
+      saveLocal('theme', theme);
+      set({ theme });
+    },
     setInputPanelOpen: (open) => set({ inputPanelOpen: open }),
     clearAllData: () => set({ assignments: [] }),
 
@@ -125,14 +134,14 @@ function createStore() {
         const trimmed = name.trim();
         if (!trimmed || s.customSubjects.includes(trimmed)) return s;
         const updated = [...s.customSubjects, trimmed];
-        saveCustomSubjects(updated);
+        saveLocal('custom-subjects', updated);
         return { customSubjects: updated };
       }),
 
     removeCustomSubject: (name) =>
       set((s) => {
         const updated = s.customSubjects.filter((c) => c !== name);
-        saveCustomSubjects(updated);
+        saveLocal('custom-subjects', updated);
         return { customSubjects: updated };
       }),
   }));

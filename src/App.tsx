@@ -13,12 +13,14 @@ import SettingsPage from './pages/SettingsPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
 function AppContent() {
-  const { darkMode, setAssignments, setUserId, setError } = useGradeStore();
+  const { darkMode, theme, setAssignments, setUserId, setError } = useGradeStore();
   const { user } = useAuth();
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', darkMode);
-  }, [darkMode]);
+    const root = document.documentElement;
+    root.classList.toggle('dark', darkMode);
+    root.setAttribute('data-theme', theme);
+  }, [darkMode, theme]);
 
   useEffect(() => {
     const uid = user?.uid ?? null;

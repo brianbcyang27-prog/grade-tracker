@@ -10,10 +10,10 @@ export default function Suggestions() {
   if (suggestions.length === 0) return null;
 
   const typeStyles = {
-    warning: { bg: '#fef3c7', border: '#f59e0b', text: '#92400e', iconBg: '#f59e0b' },
-    insight: { bg: '#dbeafe', border: '#3b82f6', text: '#1e40af', iconBg: '#3b82f6' },
-    tip: { bg: '#e0e7ff', border: '#6366f1', text: '#3730a3', iconBg: '#6366f1' },
-    achievement: { bg: '#d1fae5', border: '#10b981', text: '#065f46', iconBg: '#10b981' },
+    warning: { bg: 'var(--color-warning-light)', border: 'var(--color-warning)', text: 'var(--color-warning-text)', iconBg: 'var(--color-warning)' },
+    insight: { bg: 'var(--color-insight-light)', border: 'var(--color-insight)', text: 'var(--color-insight-text)', iconBg: 'var(--color-insight)' },
+    tip: { bg: 'var(--color-primary-light)', border: 'var(--color-primary)', text: 'var(--color-tip-text)', iconBg: 'var(--color-primary)' },
+    achievement: { bg: 'var(--color-achievement-light)', border: 'var(--color-success)', text: 'var(--color-achievement-text)', iconBg: 'var(--color-success)' },
   };
 
   return (

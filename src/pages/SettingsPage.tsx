@@ -1,12 +1,21 @@
-import { useGradeStore } from '../store/gradeStore';
+import { useGradeStore, type ThemeName } from '../store/gradeStore';
 import { useAuth } from '../context/AuthContext';
 import { exportToCSV } from '../utils/export';
 import { getAllSubjects } from '../utils/subjects';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
+const THEMES: { name: ThemeName; label: string; colors: string[] }[] = [
+  { name: 'indigo', label: 'Indigo', colors: ['#6366f1', '#8b5cf6', '#eef2ff'] },
+  { name: 'emerald', label: 'Emerald', colors: ['#059669', '#10b981', '#ecfdf5'] },
+  { name: 'rose', label: 'Rose', colors: ['#e11d48', '#f43f5e', '#fff1f2'] },
+  { name: 'amber', label: 'Amber', colors: ['#d97706', '#f59e0b', '#fffbeb'] },
+  { name: 'ocean', label: 'Ocean', colors: ['#0284c7', '#06b6d4', '#f0f9ff'] },
+  { name: 'midnight', label: 'Midnight', colors: ['#6366f1', '#1a1a35', '#0a0a1a'] },
+];
+
 export default function SettingsPage() {
-  const { darkMode, toggleDarkMode, assignments, clearAllData, customSubjects, addCustomSubject, removeCustomSubject } = useGradeStore();
+  const { darkMode, toggleDarkMode, theme, setTheme, assignments, clearAllData, customSubjects, addCustomSubject, removeCustomSubject } = useGradeStore();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [newSubject, setNewSubject] = useState('');
@@ -80,11 +89,12 @@ export default function SettingsPage() {
           </svg>
           Preferences
         </h3>
-        <div className="space-y-3">
+        <div className="space-y-4">
+          {/* Dark mode toggle */}
           <div className="flex items-center justify-between py-2 px-3 rounded-lg" style={{ backgroundColor: 'var(--color-bg)' }}>
             <div>
               <span className="text-sm" style={{ color: 'var(--color-text)' }}>Dark Mode</span>
-              <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>Toggle dark/light theme</p>
+              <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>Toggle dark/light mode</p>
             </div>
             <button
               onClick={toggleDarkMode}
@@ -98,6 +108,38 @@ export default function SettingsPage() {
                 style={{ transform: darkMode ? 'translateX(20px)' : 'translateX(0)' }}
               />
             </button>
+          </div>
+
+          {/* Theme selector */}
+          <div>
+            <p className="text-sm font-medium mb-3" style={{ color: 'var(--color-text)' }}>Color Theme</p>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+              {THEMES.map((t) => (
+                <button
+                  key={t.name}
+                  onClick={() => setTheme(t.name)}
+                  className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl cursor-pointer transition-all"
+                  style={{
+                    backgroundColor: theme === t.name ? 'var(--color-primary-light)' : 'var(--color-bg)',
+                    outline: theme === t.name ? `2px solid var(--color-primary)` : 'none',
+                  }}
+                >
+                  <div className="flex gap-0.5 rounded-lg overflow-hidden w-full h-8">
+                    {t.colors.map((c, i) => (
+                      <div key={i} className="flex-1" style={{ backgroundColor: c }} />
+                    ))}
+                  </div>
+                  <span
+                    className="text-xs font-medium"
+                    style={{
+                      color: theme === t.name ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                    }}
+                  >
+                    {t.label}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -95,7 +95,7 @@ export default function Dashboard() {
         className="fixed bottom-6 right-6 flex items-center gap-2 px-5 py-3 rounded-full text-sm font-semibold shadow-lg transition-all hover:scale-105 hover:shadow-xl z-50"
         style={{
           color: '#fff',
-          background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+          background: 'linear-gradient(135deg, var(--color-primary), var(--color-accent))',
         }}
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
