@@ -15,21 +15,31 @@ const THEMES: { name: ThemeName; label: string; colors: string[] }[] = [
 ];
 
 export default function SettingsPage() {
-  const { darkMode, toggleDarkMode, theme, setTheme, assignments, clearAllData, customSubjects, addCustomSubject, removeCustomSubject } = useGradeStore();
+  const { darkMode, toggleDarkMode, theme, setTheme, assignments, customSubjects, addCustomSubject, removeCustomSubject, seedSampleData, deleteAllFromFirestore, seeding } = useGradeStore();
   const { user, logout } = useAuth();
+  const userId = user?.uid ?? null;
   const navigate = useNavigate();
   const [newSubject, setNewSubject] = useState('');
-  const allSubjects = getAllSubjects(customSubjects);
+
+  const handleClearData = () => {
+    if (!userId) return;
+    if (window.confirm('Delete all your grade data from Firestore? This cannot be undone.')) {
+      deleteAllFromFirestore(userId);
+    }
+  };
+
+  const handleSeedData = () => {
+    if (!userId) return;
+    if (window.confirm('This will replace all your current data with sample data. Continue?')) {
+      seedSampleData(userId);
+    }
+  };
 
   const handleExport = () => {
     exportToCSV(assignments);
   };
 
-  const handleClearData = () => {
-    if (window.confirm('Are you sure you want to delete ALL your grade data? This cannot be undone.')) {
-      clearAllData();
-    }
-  };
+  const allSubjects = getAllSubjects(customSubjects);
 
   return (
     <div className="max-w-2xl mx-auto page-enter">
@@ -155,8 +165,29 @@ export default function SettingsPage() {
         </h3>
         <div className="space-y-2">
           <button
+            onClick={handleSeedData}
+            disabled={seeding}
+            className="w-full flex items-center justify-between py-2.5 px-3 rounded-lg text-sm cursor-pointer transition-all hover:scale-[1.01] disabled:opacity-50"
+            style={{
+              color: '#fff',
+              backgroundColor: 'var(--color-primary)',
+            }}
+          >
+            <span className="flex items-center gap-2">
+              {seeding ? (
+                <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+              ) : (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                </svg>
+              )}
+              {seeding ? 'Loading Sample Data...' : 'Load Sample Data'}
+            </span>
+            <span className="text-xs opacity-70">See the app in action</span>
+          </button>
+          <button
             onClick={handleExport}
-            className="w-full flex items-center justify-between py-2.5 px-3 rounded-lg text-sm cursor-pointer transition-colors"
+            className="w-full flex items-center justify-between py-2.5 px-3 rounded-lg text-sm cursor-pointer transition-colors hover:scale-[1.01]"
             style={{
               color: 'var(--color-text)',
               backgroundColor: 'var(--color-bg)',
@@ -169,13 +200,14 @@ export default function SettingsPage() {
           </button>
           <button
             onClick={handleClearData}
-            className="w-full flex items-center justify-between py-2.5 px-3 rounded-lg text-sm cursor-pointer transition-colors"
+            disabled={seeding}
+            className="w-full flex items-center justify-between py-2.5 px-3 rounded-lg text-sm cursor-pointer transition-colors hover:scale-[1.01] disabled:opacity-50"
             style={{
               color: 'var(--color-danger)',
               backgroundColor: 'var(--color-bg)',
             }}
           >
-            <span>Clear All Grade Data</span>
+            <span>Delete All Grade Data</span>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
             </svg>

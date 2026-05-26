@@ -4,10 +4,12 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  getDocs,
   query,
   onSnapshot,
   orderBy,
   Timestamp,
+  writeBatch,
   type Unsubscribe,
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -110,4 +112,48 @@ export async function deleteGrade(userId: string, gradeId: string): Promise<void
   console.log('[Firestore] Deleting grade:', gradeId);
   const ref = doc(db, 'users', userId, 'grades', gradeId);
   await deleteDoc(ref);
+}
+
+export async function deleteAllGrades(userId: string): Promise<void> {
+  const ref = gradesCollection(userId);
+  const snapshot = await getDocs(ref);
+  const batch = writeBatch(db);
+  snapshot.docs.forEach((d) => batch.delete(d.ref));
+  await batch.commit();
+  console.log('[Firestore] Deleted all grades for user:', userId);
+}
+
+export async function seedGrades(
+  userId: string,
+  entries: Array<{
+    semester: Semester;
+    subject: string;
+    criterion: Criterion;
+    title: string;
+    score: number;
+    date: string;
+    notes?: string;
+  }>,
+): Promise<void> {
+  const ref = gradesCollection(userId);
+  const batch = writeBatch(db);
+  const now = Timestamp.now();
+  for (const entry of entries) {
+    const docRef = doc(ref);
+    batch.set(docRef, {
+      semester: entry.semester,
+      subject: entry.subject,
+      criterion: entry.criterion,
+      title: entry.title,
+      score: entry.score,
+      maxScore: 8,
+      date: entry.date,
+      status: 'data in',
+      notes: entry.notes ?? null,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+  await batch.commit();
+  console.log('[Firestore] Seeded', entries.length, 'grades for user:', userId);
 }

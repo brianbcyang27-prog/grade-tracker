@@ -8,16 +8,15 @@ export interface Suggestion {
   icon: string;
 }
 
-export function generateSuggestions(assignments: Assignment[]): Suggestion[] {
-  const suggestions: Suggestion[] = [];
+const MAX_SUGGESTIONS = 4;
 
+export function generateSuggestions(assignments: Assignment[]): Suggestion[] {
   if (assignments.length === 0) {
-    suggestions.push({
+    return [{
       type: 'tip',
       message: 'Start by adding your first assignment using the Mini Input Panel on the right.',
       icon: '💡',
-    });
-    return suggestions;
+    }];
   }
 
   const subjectSemesters = new Set<string>();
@@ -28,58 +27,78 @@ export function generateSuggestions(assignments: Assignment[]): Suggestion[] {
     return computeSubjectData(assignments, subject, semester);
   });
 
+  const result: Suggestion[] = [];
+
+  // 1. Warnings — weakest criterion below 4, sorted by severity
+  const warnings: Suggestion[] = [];
   for (const subject of allSubjects) {
     const weakest = findWeakestCriterion(subject.criteria);
     if (weakest) {
-      const avg = weakest.scores.length > 0
-        ? weakest.scores.reduce((a, b) => a + b, 0) / weakest.scores.length
-        : 0;
-      if (avg < 4 && weakest.scores.length > 0) {
-        suggestions.push({
+      const scores = weakest.scores;
+      const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+      if (avg < 4 && scores.length > 0) {
+        warnings.push({
           type: 'warning',
-          message: `Your weakest criterion is ${weakest.criterion} in ${subject.subject} (avg: ${avg.toFixed(1)}/8). Consider focusing more effort here.`,
+          message: `Weakest: Criterion ${weakest.criterion} in ${subject.subject} (avg ${avg.toFixed(1)}/8). Focus here.`,
           icon: '⚠️',
         });
       }
     }
+  }
+  warnings.sort((a, b) => {
+    const aAvg = parseFloat(a.message.match(/\(avg ([\d.]+)\/8\)/)?.[1] ?? '8');
+    const bAvg = parseFloat(b.message.match(/\(avg ([\d.]+)\/8\)/)?.[1] ?? '8');
+    return aAvg - bAvg;
+  });
+  result.push(...warnings.slice(0, 2));
 
-    const nextBand = findNextGradeBand(subject.totalScore);
-    if (nextBand) {
-      const pointsNeeded = nextBand.minScore - subject.totalScore;
-      if (pointsNeeded > 0 && pointsNeeded <= 4) {
-        suggestions.push({
-          type: 'insight',
-          message: `You are ${pointsNeeded.toFixed(1)} point${pointsNeeded > 1 ? 's' : ''} away from ${nextBand.letter} in ${subject.subject}.`,
-          icon: '🎯',
-        });
-      }
-    }
-
+  // 2. Achievements — only show the best one
+  const achievements: Suggestion[] = [];
+  for (const subject of allSubjects) {
     if (subject.totalScore >= 28) {
-      suggestions.push({
+      achievements.push({
         type: 'achievement',
-        message: `Outstanding performance in ${subject.subject}! You achieved an A (${subject.totalScore}/32).`,
+        message: `Outstanding: ${subject.subject} with ${subject.totalScore.toFixed(1)}/32 (${subject.grade.letter}).`,
         icon: '🏆',
       });
     }
   }
-
   const totalEntries = assignments.length;
-  if (totalEntries > 20) {
-    suggestions.push({
+  if (totalEntries > 30) {
+    achievements.push({
       type: 'achievement',
-      message: `You've logged ${totalEntries} assignments — great tracking habit!`,
+      message: `You've logged ${totalEntries} assignments — solid tracking habit!`,
       icon: '📊',
     });
   }
+  if (achievements.length > 0) {
+    result.push(achievements[0]);
+  }
 
-  suggestions.push({
-    type: 'tip',
-    message: 'Tip: Use the What-If Calculator on any subject page to see how changing a score affects your final grade.',
-    icon: '💡',
-  });
+  // 3. Grade gap insights — closest to next band, max 1
+  const gaps: { points: number; message: string }[] = [];
+  for (const subject of allSubjects) {
+    const nextBand = findNextGradeBand(subject.totalScore);
+    if (nextBand) {
+      const pointsNeeded = nextBand.minScore - subject.totalScore;
+      if (pointsNeeded > 0 && pointsNeeded <= 4) {
+        gaps.push({
+          points: pointsNeeded,
+          message: `${pointsNeeded.toFixed(1)} pt${pointsNeeded > 1 ? 's' : ''} to ${nextBand.letter} in ${subject.subject}.`,
+        });
+      }
+    }
+  }
+  gaps.sort((a, b) => a.points - b.points);
+  if (gaps.length > 0) {
+    result.push({
+      type: 'insight',
+      message: `Close to the next grade: ${gaps[0].message}`,
+      icon: '🎯',
+    });
+  }
 
-  return suggestions;
+  return result.slice(0, MAX_SUGGESTIONS);
 }
 
 function findWeakestCriterion(

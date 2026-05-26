@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Assignment, Semester, Criterion } from '../types';
-import { addGrade, updateGrade, deleteGrade } from '../services/gradeService';
+import { addGrade, updateGrade, deleteGrade, deleteAllGrades, seedGrades } from '../services/gradeService';
 
 export type ThemeName = 'indigo' | 'emerald' | 'rose' | 'amber' | 'ocean' | 'midnight';
 
@@ -27,6 +27,7 @@ interface GradeStore {
   loading: boolean;
   error: string | null;
   customSubjects: string[];
+  seeding: boolean;
 
   setUserId: (uid: string | null) => void;
   setAssignments: (list: Assignment[]) => void;
@@ -59,6 +60,8 @@ interface GradeStore {
   clearAllData: () => void;
   addCustomSubject: (name: string) => void;
   removeCustomSubject: (name: string) => void;
+  deleteAllFromFirestore: (userId: string) => Promise<void>;
+  seedSampleData: (userId: string) => Promise<void>;
 }
 
 function createStore() {
@@ -72,6 +75,7 @@ function createStore() {
     loading: true,
     error: null,
     customSubjects: loadLocal<string[]>('custom-subjects', []),
+    seeding: false,
 
     setUserId: (uid) => {
       set({ userId: uid });
@@ -144,6 +148,33 @@ function createStore() {
         saveLocal('custom-subjects', updated);
         return { customSubjects: updated };
       }),
+
+    deleteAllFromFirestore: async (userId) => {
+      try {
+        set({ seeding: true });
+        await deleteAllGrades(userId);
+      } catch (err: any) {
+        console.error('[Store] deleteAll failed:', err);
+        set({ error: err.message });
+      } finally {
+        set({ seeding: false });
+      }
+    },
+
+    seedSampleData: async (userId) => {
+      try {
+        set({ seeding: true });
+        const { generateSampleData } = await import('../utils/sampleData');
+        const data = generateSampleData();
+        await deleteAllGrades(userId); // clear existing first
+        await seedGrades(userId, data);
+      } catch (err: any) {
+        console.error('[Store] seedSampleData failed:', err);
+        set({ error: err.message });
+      } finally {
+        set({ seeding: false });
+      }
+    },
   }));
 }
 
