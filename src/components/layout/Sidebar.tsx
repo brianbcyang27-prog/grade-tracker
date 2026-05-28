@@ -76,7 +76,7 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="p-4 border-t" style={{ borderColor: 'var(--color-border)' }}>
+      <div className="p-4 border-t space-y-2" style={{ borderColor: 'var(--color-border)' }}>
         <button
           onClick={() => setInputPanelOpen(!inputPanelOpen)}
           className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer"
@@ -94,6 +94,21 @@ export default function Sidebar() {
           </svg>
           {inputPanelOpen ? 'Close Input Panel' : 'Add Grade'}
         </button>
+
+        <p
+          className="text-[10px] text-center leading-relaxed"
+          style={{ color: 'var(--color-text-secondary)' }}
+        >
+          Built by{' '}
+          <span className="font-semibold" style={{ color: 'var(--color-primary)' }}>
+            Brian Yang
+          </span>{' '}
+          楊博全
+          <br />
+          <span className="opacity-70">Class of 2029 · Kaohsiung American School</span>
+          <br />
+          <span className="opacity-70">&copy; 2026 All rights reserved.</span>
+        </p>
       </div>
     </aside>
   );

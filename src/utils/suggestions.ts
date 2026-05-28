@@ -1,6 +1,7 @@
-import type { Assignment, Semester, Criterion } from '../types';
+import type { Assignment, Semester, Criterion, SubjectData } from '../types';
 import { CRITERIA } from '../types';
-import { computeSubjectData, GRADE_BANDS, getGradeBand } from './grading';
+import { computeSubjectData, detectSystem } from './grading';
+import { GRADE_9_BANDS, GRADE_10_BANDS } from './grading';
 
 export interface Suggestion {
   type: 'warning' | 'insight' | 'tip' | 'achievement';
@@ -78,7 +79,7 @@ export function generateSuggestions(assignments: Assignment[]): Suggestion[] {
   // 3. Grade gap insights — closest to next band, max 1
   const gaps: { points: number; message: string }[] = [];
   for (const subject of allSubjects) {
-    const nextBand = findNextGradeBand(subject.totalScore);
+    const nextBand = findNextGradeBand(subject);
     if (nextBand) {
       const pointsNeeded = nextBand.minScore - subject.totalScore;
       if (pointsNeeded > 0 && pointsNeeded <= 4) {
@@ -120,16 +121,15 @@ function findWeakestCriterion(
   return weakest;
 }
 
-function findNextGradeBand(currentScore: number): { minScore: number; letter: string } | null {
-  const currentBand = getGradeBand(currentScore);
-  const currentIdx = GRADE_BANDS.findIndex(
-    (g) => g.letter === currentBand.letter,
-  );
+function findNextGradeBand(subject: SubjectData): { minScore: number; letter: string } | null {
+  const system = detectSystem(subject.semester);
+  const bands = system === 'myp-year4' ? GRADE_9_BANDS : GRADE_10_BANDS;
+  const currentIdx = bands.findIndex((g) => g.letter === subject.grade.letter);
 
-  if (currentIdx < GRADE_BANDS.length - 1) {
+  if (currentIdx >= 0 && currentIdx < bands.length - 1) {
     return {
-      minScore: GRADE_BANDS[currentIdx + 1].minScore,
-      letter: GRADE_BANDS[currentIdx + 1].letter,
+      minScore: bands[currentIdx + 1].minScore,
+      letter: bands[currentIdx + 1].letter,
     };
   }
 

@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import SettingsPage from './pages/SettingsPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import OnboardingTour from './components/onboarding/OnboardingTour';
 
 function AppContent() {
   const { darkMode, theme, setAssignments, setUserId, setError } = useGradeStore();
@@ -45,22 +46,25 @@ function AppContent() {
   }, [user]);
 
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route
-        element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/subject/:subject/:semester" element={<SubjectDetail />} />
-        <Route path="/timeline" element={<TimelineView />} />
-        <Route path="/settings" element={<SettingsPage />} />
-      </Route>
-    </Routes>
+    <>
+      <OnboardingTour />
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/subject/:subject/:semester" element={<SubjectDetail />} />
+          <Route path="/timeline" element={<TimelineView />} />
+          <Route path="/settings" element={<SettingsPage />} />
+        </Route>
+      </Routes>
+    </>
   );
 }
 

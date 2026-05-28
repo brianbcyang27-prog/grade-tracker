@@ -18,6 +18,7 @@ export default function MiniInputPanel() {
   const [title, setTitle] = useState('');
   const [score, setScore] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [includeDate, setIncludeDate] = useState(true);
   const [notes, setNotes] = useState('');
   const [success, setSuccess] = useState(false);
   const [localError, setLocalError] = useState('');
@@ -45,7 +46,7 @@ export default function MiniInputPanel() {
 
     console.log('[InputPanel] Calling addAssignment...');
     try {
-      await addAssignment(userId, semester, subject, criterion, title.trim(), scoreNum, date, notes || undefined);
+      await addAssignment(userId, semester, subject, criterion, title.trim(), scoreNum, includeDate ? date : undefined, notes || undefined);
       console.log('[InputPanel] addAssignment completed');
 
       setTitle('');
@@ -251,18 +252,35 @@ export default function MiniInputPanel() {
         </div>
 
         <div>
-          <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
-            Date
-          </label>
+          <div className="flex items-center gap-1.5 mb-1">
+            <label className="block text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+              Date
+            </label>
+            <button
+              type="button"
+              onClick={() => setIncludeDate(!includeDate)}
+              className="relative inline-flex h-3.5 w-6 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors"
+              style={{
+                backgroundColor: includeDate ? 'var(--color-primary)' : 'var(--color-border)',
+              }}
+            >
+              <span
+                className="pointer-events-none inline-block h-2.5 w-2.5 rounded-full bg-white shadow ring-0 transition-transform"
+                style={{ transform: includeDate ? 'translateX(11px)' : 'translateX(0)' }}
+              />
+            </button>
+          </div>
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg text-sm border transition-colors"
+            disabled={!includeDate}
+            className="w-full px-3 py-2 rounded-lg text-sm border transition-all"
             style={{
               backgroundColor: 'var(--color-surface)',
               color: 'var(--color-text)',
               borderColor: 'var(--color-border)',
+              opacity: includeDate ? 1 : 0.35,
             }}
           />
         </div>

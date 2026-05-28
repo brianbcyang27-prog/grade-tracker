@@ -20,6 +20,7 @@ export default function SubjectDetail() {
   const [addTitle, setAddTitle] = useState('');
   const [addScore, setAddScore] = useState('');
   const [addDate, setAddDate] = useState(new Date().toISOString().split('T')[0]);
+  const [includeDate, setIncludeDate] = useState(true);
   // Inline editing
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -61,7 +62,7 @@ export default function SubjectDetail() {
     if (!userId) return;
     const num = parseFloat(addScore);
     if (!addTitle.trim() || isNaN(num) || num < 0 || num > 8) return;
-    addAssignment(userId, semesterParam, subject, addCriterion, addTitle.trim(), num, addDate || undefined);
+    addAssignment(userId, semesterParam, subject, addCriterion, addTitle.trim(), num, includeDate ? addDate : undefined);
     setAddTitle('');
     setAddScore('');
     setShowAdd(false);
@@ -226,13 +227,34 @@ export default function SubjectDetail() {
               />
             </div>
             <div>
-              <label className="block text-[10px] font-medium mb-0.5" style={{ color: 'var(--color-text-secondary)' }}>Date</label>
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <label className="block text-[10px] font-medium" style={{ color: 'var(--color-text-secondary)' }}>Date</label>
+                <button
+                  type="button"
+                  onClick={() => setIncludeDate(!includeDate)}
+                  className="relative inline-flex h-3.5 w-6 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors"
+                  style={{
+                    backgroundColor: includeDate ? 'var(--color-primary)' : 'var(--color-border)',
+                  }}
+                >
+                  <span
+                    className="pointer-events-none inline-block h-2.5 w-2.5 rounded-full bg-white shadow ring-0 transition-transform"
+                    style={{ transform: includeDate ? 'translateX(11px)' : 'translateX(0)' }}
+                  />
+                </button>
+              </div>
               <input
                 type="date"
                 value={addDate}
                 onChange={(e) => setAddDate(e.target.value)}
-                className="w-28 px-2 py-1.5 rounded text-xs border"
-                style={{ backgroundColor: 'var(--color-surface)', color: 'var(--color-text)', borderColor: 'var(--color-border)' }}
+                disabled={!includeDate}
+                className="w-28 px-2 py-1.5 rounded text-xs border transition-all"
+                style={{
+                  backgroundColor: 'var(--color-surface)',
+                  color: 'var(--color-text)',
+                  borderColor: 'var(--color-border)',
+                  opacity: includeDate ? 1 : 0.35,
+                }}
               />
             </div>
             <button

@@ -1,5 +1,6 @@
+import type { Semester } from '../../types';
 import { useGradeStore } from '../../store/gradeStore';
-import { computeAllSubjects, computeOverallAverage, computeGPAEquivalent, getGradeBand } from '../../utils/grading';
+import { computeAllSubjects, computeOverallAverage, computeGPAEquivalent, getGradeBand, detectSystem } from '../../utils/grading';
 import Badge from '../common/Badge';
 
 export default function OverallSummary() {
@@ -7,7 +8,8 @@ export default function OverallSummary() {
   const subjects = computeAllSubjects(assignments, selectedSemester);
   const avgScore = computeOverallAverage(subjects);
   const gpa = computeGPAEquivalent(avgScore);
-  const avgGrade = getGradeBand(avgScore);
+  const system = selectedSemester === 'ALL' ? undefined : detectSystem(selectedSemester as Semester);
+  const avgGrade = getGradeBand(avgScore, system);
   const totalAssignments = subjects.reduce((sum, s) => {
     return sum + Object.values(s.criteria).reduce((a, b) => a + b.length, 0);
   }, 0);

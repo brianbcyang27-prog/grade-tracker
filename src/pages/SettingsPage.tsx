@@ -4,6 +4,7 @@ import { exportToCSV } from '../utils/export';
 import { getAllSubjects } from '../utils/subjects';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import DocumentationTab from '../components/docs/DocumentationTab';
 
 const THEMES: { name: ThemeName; label: string; colors: string[] }[] = [
   { name: 'indigo', label: 'Indigo', colors: ['#6366f1', '#8b5cf6', '#eef2ff'] },
@@ -20,6 +21,7 @@ export default function SettingsPage() {
   const userId = user?.uid ?? null;
   const navigate = useNavigate();
   const [newSubject, setNewSubject] = useState('');
+  const [tab, setTab] = useState<'settings' | 'docs'>('settings');
 
   const handleClearData = () => {
     if (!userId) return;
@@ -43,6 +45,34 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto page-enter">
+      {/* Tab bar */}
+      <div className="flex gap-1 p-1 rounded-xl mb-6 animate-fadeIn" style={{ backgroundColor: 'var(--color-surface)' }}>
+        <button
+          onClick={() => setTab('settings')}
+          className="flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer"
+          style={{
+            color: tab === 'settings' ? '#fff' : 'var(--color-text-secondary)',
+            backgroundColor: tab === 'settings' ? 'var(--color-primary)' : 'transparent',
+          }}
+        >
+          ⚙️ Settings
+        </button>
+        <button
+          onClick={() => setTab('docs')}
+          className="flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer"
+          style={{
+            color: tab === 'docs' ? '#fff' : 'var(--color-text-secondary)',
+            backgroundColor: tab === 'docs' ? 'var(--color-primary)' : 'transparent',
+          }}
+        >
+          📖 Documentation
+        </button>
+      </div>
+
+      {tab === 'docs' ? (
+        <DocumentationTab />
+      ) : (
+        <>
       <div className="mb-6 animate-fadeIn">
         <h2 className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
           Settings
@@ -281,6 +311,8 @@ export default function SettingsPage() {
           })}
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }
