@@ -1,3 +1,4 @@
+import { localDateString } from '../../utils/date';
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useGradeStore } from '../../store/gradeStore';
@@ -19,7 +20,7 @@ export default function SubjectDetail() {
   const [addCriterion, setAddCriterion] = useState<Criterion>('A');
   const [addTitle, setAddTitle] = useState('');
   const [addScore, setAddScore] = useState('');
-  const [addDate, setAddDate] = useState(new Date().toISOString().split('T')[0]);
+  const [addDate, setAddDate] = useState(localDateString());
   const [includeDate, setIncludeDate] = useState(true);
   // Inline editing
   const [editingId, setEditingId] = useState<string | null>(null);

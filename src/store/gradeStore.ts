@@ -1,6 +1,8 @@
+import { localDateString } from '../utils/date';
 import { create } from 'zustand';
 import type { Assignment, Semester, Criterion } from '../types';
-import { addGrade, updateGrade, deleteGrade, deleteAllGrades, seedGrades } from '../services/gradeService';
+import { addGrade, addTaskGrades, updateGrade, deleteGrade, deleteAllGrades, seedGrades } from '../services/gradeService';
+import type { TaskGradeInput } from '../services/gradeService';
 
 export type ThemeName = 'indigo' | 'emerald' | 'rose' | 'amber' | 'ocean' | 'midnight';
 
@@ -44,6 +46,9 @@ interface GradeStore {
     date?: string,
     notes?: string,
   ) => Promise<void>;
+
+  /** Saves every criterion of one task together. Throws on failure so the form can show it. */
+  addTask: (userId: string, task: TaskGradeInput) => Promise<void>;
 
   removeAssignment: (userId: string, id: string) => Promise<void>;
 
@@ -97,13 +102,17 @@ function createStore() {
           criterion,
           title,
           score,
-          date: date ?? new Date().toISOString().split('T')[0],
+          date: date ?? localDateString(),
           notes,
         });
       } catch (err: any) {
         console.error('[Store] addAssignment failed:', err);
         set({ error: `Failed to add grade: ${err.message}` });
       }
+    },
+
+    addTask: async (userId, task) => {
+      await addTaskGrades(userId, task);
     },
 
     removeAssignment: async (userId, id) => {

@@ -1,3 +1,4 @@
+import { localDateString } from './date';
 import type { Assignment } from '../types';
 
 export function exportToCSV(assignments: Assignment[]): void {
@@ -20,7 +21,7 @@ export function exportToCSV(assignments: Assignment[]): void {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `myp-grades-${new Date().toISOString().split('T')[0]}.csv`;
+  link.download = `myp-grades-${localDateString()}.csv`;
   link.click();
   URL.revokeObjectURL(url);
 }

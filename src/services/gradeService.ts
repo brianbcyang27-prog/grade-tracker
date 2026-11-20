@@ -90,6 +90,43 @@ export async function addGrade(
   return docRef.id;
 }
 
+export interface TaskGradeInput {
+  semester: Semester;
+  subject: string;
+  title: string;
+  date: string;
+  notes?: string;
+  scores: { criterion: Criterion; score: number }[];
+}
+
+/**
+ * Saves one task assessed on several criteria. Each criterion is stored as its own
+ * grade (so grading, the table and CSV export work unchanged), written in a single
+ * batch so a task is never half-saved.
+ */
+export async function addTaskGrades(userId: string, task: TaskGradeInput): Promise<void> {
+  const batch = writeBatch(db);
+  const now = Timestamp.now();
+
+  for (const { criterion, score } of task.scores) {
+    batch.set(doc(gradesCollection(userId)), {
+      semester: task.semester,
+      subject: task.subject,
+      criterion,
+      title: task.title,
+      score,
+      maxScore: 8,
+      date: task.date,
+      status: 'data in',
+      ...(task.notes ? { notes: task.notes } : {}),
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
+  await batch.commit();
+}
+
 export async function updateGrade(
   userId: string,
   gradeId: string,

@@ -1,11 +1,14 @@
+import { localDateString } from '../../utils/date';
 import { useState } from 'react';
 import { useGradeStore } from '../../store/gradeStore';
 import { SEMESTERS, CRITERIA } from '../../types';
-import type { Semester, Criterion } from '../../types';
+import type { Semester } from '../../types';
 import { getAllSubjects } from '../../utils/subjects';
+import { EMPTY_CRITERION_INPUTS, parseCriterionScores } from '../../utils/taskEntry';
+import type { CriterionInputs } from '../../utils/taskEntry';
 
 export default function MiniInputPanel() {
-  const addAssignment = useGradeStore((s) => s.addAssignment);
+  const addTask = useGradeStore((s) => s.addTask);
   const userId = useGradeStore((s) => s.userId);
   const storeError = useGradeStore((s) => s.error);
   const setError = useGradeStore((s) => s.setError);
@@ -14,10 +17,10 @@ export default function MiniInputPanel() {
   const allSubjects = getAllSubjects(customSubjects);
   const [semester, setSemester] = useState<Semester>(SEMESTERS[0]);
   const [subject, setSubject] = useState<string>(allSubjects[0]);
-  const [criterion, setCriterion] = useState<Criterion>('A');
+  const [criterionInputs, setCriterionInputs] = useState<CriterionInputs>(EMPTY_CRITERION_INPUTS);
   const [title, setTitle] = useState('');
-  const [score, setScore] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [saving, setSaving] = useState(false);
+  const [date, setDate] = useState(localDateString());
   const [includeDate, setIncludeDate] = useState(true);
   const [notes, setNotes] = useState('');
   const [success, setSuccess] = useState(false);
@@ -29,37 +32,45 @@ export default function MiniInputPanel() {
     e.preventDefault();
     setLocalError('');
 
-    console.log('[InputPanel] Submit clicked. userId:', userId);
-    console.log('[InputPanel] Form values:', { semester, subject, criterion, title, score, date });
-
     if (!userId) {
-      console.error('[InputPanel] No userId - user might not be logged in');
       setLocalError('Not logged in. Please sign in first.');
       return;
     }
-
-    const scoreNum = parseFloat(score);
-    if (!title.trim() || isNaN(scoreNum) || scoreNum < 0 || scoreNum > 8) {
-      setLocalError('Invalid input. Score must be 0-8 and title is required.');
+    if (!title.trim()) {
+      setLocalError('Task title is required.');
+      return;
+    }
+    const parsed = parseCriterionScores(criterionInputs);
+    if (!parsed.ok) {
+      setLocalError(parsed.error);
       return;
     }
 
-    console.log('[InputPanel] Calling addAssignment...');
+    setSaving(true);
     try {
-      await addAssignment(userId, semester, subject, criterion, title.trim(), scoreNum, includeDate ? date : undefined, notes || undefined);
-      console.log('[InputPanel] addAssignment completed');
-
+      await addTask(userId, {
+        semester,
+        subject,
+        title: title.trim(),
+        date: includeDate ? date : localDateString(),
+        notes: notes.trim() || undefined,
+        scores: parsed.scores,
+      });
       setTitle('');
-      setScore('');
+      setCriterionInputs(EMPTY_CRITERION_INPUTS);
       setNotes('');
       setSuccess(true);
       setError(null);
       setTimeout(() => setSuccess(false), 2000);
-    } catch (err: any) {
-      console.error('[InputPanel] Submit failed:', err);
-      setLocalError(`Error: ${err.message}`);
+    } catch (err) {
+      console.error('[InputPanel] Saving task failed:', err);
+      setLocalError(`Couldn't save the task: ${err instanceof Error ? err.message : 'unknown error'}`);
+    } finally {
+      setSaving(false);
     }
   };
+
+  const filledCount = CRITERIA.filter((c) => criterionInputs[c].trim() !== '').length;
 
   return (
     <div className="p-4">
@@ -190,51 +201,9 @@ export default function MiniInputPanel() {
           )}
         </div>
 
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
-              Criterion
-            </label>
-            <select
-              value={criterion}
-              onChange={(e) => setCriterion(e.target.value as Criterion)}
-              className="w-full px-3 py-2 rounded-lg text-sm border transition-colors cursor-pointer"
-              style={{
-                backgroundColor: 'var(--color-surface)',
-                color: 'var(--color-text)',
-                borderColor: 'var(--color-border)',
-              }}
-            >
-              {CRITERIA.map((c) => (
-                <option key={c} value={c}>Criterion {c}</option>
-              ))}
-            </select>
-          </div>
-          <div className="w-20">
-            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
-              Score (0-8)
-            </label>
-            <input
-              type="number"
-              min={0}
-              max={8}
-              step={1}
-              value={score}
-              onChange={(e) => setScore(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg text-sm border transition-colors"
-              style={{
-                backgroundColor: 'var(--color-surface)',
-                color: 'var(--color-text)',
-                borderColor: 'var(--color-border)',
-              }}
-              required
-            />
-          </div>
-        </div>
-
         <div>
           <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
-            Assignment Title
+            Task Title
           </label>
           <input
             type="text"
@@ -250,6 +219,44 @@ export default function MiniInputPanel() {
             required
           />
         </div>
+
+        <fieldset>
+          <legend className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+            Criterion scores (0-8) <span className="font-normal opacity-75">· leave blank if not assessed</span>
+          </legend>
+          <div className="grid grid-cols-4 gap-1.5">
+            {CRITERIA.map((c) => {
+              const filled = criterionInputs[c].trim() !== '';
+              return (
+                <label key={c} className="flex flex-col items-center gap-1">
+                  <span
+                    className="text-[11px] font-semibold"
+                    style={{ color: filled ? 'var(--color-primary)' : 'var(--color-text-secondary)' }}
+                  >
+                    {c}
+                  </span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    max={8}
+                    step={1}
+                    value={criterionInputs[c]}
+                    onChange={(e) => setCriterionInputs((prev) => ({ ...prev, [c]: e.target.value }))}
+                    placeholder="–"
+                    aria-label={`Criterion ${c} score`}
+                    className="w-full px-1 py-2 rounded-lg text-sm text-center border transition-colors"
+                    style={{
+                      backgroundColor: filled ? 'var(--color-primary-light)' : 'var(--color-surface)',
+                      color: 'var(--color-text)',
+                      borderColor: filled ? 'var(--color-primary)' : 'var(--color-border)',
+                    }}
+                  />
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
 
         <div>
           <div className="flex items-center gap-1.5 mb-1">
@@ -305,13 +312,20 @@ export default function MiniInputPanel() {
 
         <button
           type="submit"
-          className="w-full py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer"
+          disabled={saving}
+          className="w-full py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer disabled:opacity-60 disabled:cursor-wait"
           style={{
             color: '#fff',
             backgroundColor: success ? 'var(--color-success)' : 'var(--color-primary)',
           }}
         >
-          {success ? '✓ Added!' : 'Add Assignment'}
+          {success
+            ? '✓ Added!'
+            : saving
+              ? 'Saving…'
+              : filledCount > 1
+                ? `Add Task (${filledCount} criteria)`
+                : 'Add Task'}
         </button>
       </form>
 
@@ -322,8 +336,8 @@ export default function MiniInputPanel() {
           color: 'var(--color-text-secondary)',
         }}
       >
-        <strong style={{ color: 'var(--color-primary)' }}>Tip:</strong> Scores are 0-8 per criterion.
-        Average of all assignments in each criterion is used for the final grade calculation.
+        <strong style={{ color: 'var(--color-primary)' }}>Tip:</strong> Enter the task once, just like on
+        ManageBac, and fill in every criterion it was marked on. Each criterion's average is used for the final grade.
       </div>
     </div>
   );
